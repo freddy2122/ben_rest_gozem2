@@ -117,20 +117,19 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'regex:/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'],
         ]);
     
-        // Récupérer les données de la requête
         $credentials = $request->only('email', 'password', 'token');
     
-        // Reset du mot de passe
+       
         $status = Password::broker()->reset($credentials, function ($user, $password) {
             $user->forceFill([
                 'password' => bcrypt($password),
             ])->save();
     
-            // Envoyer la notification de réinitialisation de mot de passe
+           
             $user->notify(new ResetPasswordNotification($user));
         });
     
-        // Vérifier le statut de la réinitialisation
+        
         if ($status === Password::PASSWORD_RESET) {
             return response()->json([
                 'message' => 'Réinitialisation du mot de passe réussie'
@@ -142,7 +141,21 @@ class AuthController extends Controller
         }
     }
 
-    public function logout() {
+    public function logout(Request $request) {
 
+        Auth::logout();
+
+       
+        return response()->json([
+            "success"=> true,
+            "message"=> "Deconnexion réussie",
+        ]);
+
+        if (!Auth::logout()) {
+            return response()->json([
+                "success"=> false,
+                "message"=> "Deconnexion non réussie",
+            ]);
+        }
     }
 }
